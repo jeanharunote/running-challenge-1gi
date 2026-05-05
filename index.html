@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>30일 러닝 인증 챌린지 | 같이 뛰자 하루 러닝</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #FFFDF4; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const C = {
+      yellow: "#F2C744",
+      yellowLight: "#FBE8A0",
+      yellowDark: "#C9A200",
+      bg: "#FFFDF4",
+      bgDark: "#1A1A1A",
+      text: "#1A1A1A",
+      textSub: "#555555",
+      textMuted: "#888888",
+      white: "#FFFFFF",
+      border: "#E8E0C8",
+      success: "#2D9E6B",
+      red: "#E03030",
+    };
+
+    const FONT = `'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif`;
+
+    function useInView(threshold = 0.15) {
+      const ref = useRef(null);
+      const [visible, setVisible] = useState(false);
+      useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+          ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+          { threshold }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+      }, []);
+      return [ref, visible];
+    }
+
+    function Reveal({ children, delay = 0 }) {
+      const [ref, visible] = useInView();
+      return (
+        <div ref={ref} style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(28px)",
+          transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+        }}>
+          {children}
+        </div>
+      );
+    }
+
+    function Section({ children, bg = C.white, id, style = {} }) {
+      return (
+        <section id={id} style={{
+          background: bg, padding: "72px 24px", fontFamily: FONT, ...style,
+        }}>
+          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+            {children}
+          </div>
+        </section>
+      );
+    }
+
+    function Tag({ children }) {
+      return (
+        <span style={{
+          display: "inline-block",
+          background: C.yellow, color: C.text,
+          fontFamily: FONT, fontWeight: 700, fontSize: 12,
+          padding: "4px 12px", borderRadius: 100,
+          letterSpacing: "0.06em", textTransform: "uppercase",
+          marginBottom: 16,
+        }}>
+          {children}
+        </span>
+      );
+    }
+
+    function SectionTitle({ tag, title, sub, center = false }) {
+      return (
+        <div style={{ textAlign: center ? "center" : "left", marginBottom: 40 }}>
+          {tag && <Tag>{tag}</Tag>}
+          <h2 style={{
+            fontFamily: FONT, fontSize: "clamp(22px, 4vw, 30px)",
+            fontWeight: 700, color: C.text,
+            lineHeight: 1.45, margin: "0 0 14px",
+            whiteSpace: "pre-line",
+          }}>
+            {title}
+          </h2>
+          {sub && (
+            <p style={{
+              fontFamily: FONT, fontSize: 15, color: C.textSub,
+              lineHeight: 1.7, margin: 0,
+            }}>
+              {sub}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    function PainItem({ icon, text }) {
+      return (
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 12,
+          padding: "16px 0", borderBottom: `1px solid ${C.border}`,
+        }}>
+          <span style={{ fontSize: 20, lineHeight: 1 }}>{icon}</span>
+          <p style={{
+            fontFamily: FONT, fontSize: 15, color: C.text,
+            lineHeight: 1.6, margin: 0,
+          }}>
+            {text}
+          </p>
+        </div>
+      );
+    }
+
+    function StepCard({ num, title, desc }) {
+      return (
+        <div style={{
+          background: C.white, border: `1.5px solid ${C.border}`,
+          borderRadius: 16, padding: "24px 20px",
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: "50%",
+            background: C.yellow, display: "flex",
+            alignItems: "center", justifyContent: "center",
+            fontFamily: FONT, fontWeight: 800, fontSize: 15,
+            color: C.text, marginBottom: 12,
+          }}>
+            {num}
+          </div>
+          <h4 style={{
+            fontFamily: FONT, fontWeight: 700, fontSize: 16,
+            color: C.text, margin: "0 0 8px",
+          }}>
+            {title}
+          </h4>
+          <p style={{
+            fontFamily: FONT, fontSize: 13, color: C.textSub,
+            lineHeight: 1.6, margin: 0,
+          }}>
+            {desc}
+          </p>
+        </div>
+      );
+    }
+
+    function BenefitRow({ icon, title, desc }) {
+      return (
+        <div style={{
+          display: "flex", gap: 16, padding: "20px 0",
+          borderBottom: `1px solid ${C.border}`,
+          alignItems: "flex-start",
+        }}>
+          <span style={{ fontSize: 28, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{icon}</span>
+          <div>
+            <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: C.text, margin: "0 0 4px" }}>
+              {title}
+            </p>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSub, lineHeight: 1.65, margin: 0 }}>
+              {desc}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    const benefits = [
+      {
+        icon: "✅",
+        title: "주 3회 러닝 인증 시스템",
+        desc: "매주 요일을 정해 단톡방에 러닝 인증샷을 올립니다. 혼자였다면 '오늘 쉬지 뭐'가, 여기선 '오늘도 달렸다'로 바뀝니다.",
+      },
+      {
+        icon: "💰",
+        title: "보증금 환급 시스템",
+        desc: "참여비 외 보증금 ₩20,000을 추가로 납부합니다. 주 3회 이상 인증 완료 시 전액 돌려받습니다. 돈이 동기가 됩니다.",
+      },
+      {
+        icon: "💬",
+        title: "단톡방 커뮤니티",
+        desc: "같은 목표를 가진 초보 러너들과 함께합니다. 슬럼프가 왔을 때, 혼자가 아니라는 걸 느낄 수 있는 공간입니다.",
+      },
+      {
+        icon: "🏃‍♀️",
+        title: "월 1회 오프라인 러닝 (서울 한강)",
+        desc: "한 달에 한 번, 한강에서 함께 달립니다. 혼자 달리던 것과는 전혀 다른 경험입니다.",
+      },
+    ];
+
+    const weekCurriculum = [
+      { week: "1주차", title: "시작하기", items: ["러닝화·복장·준비물 가이드", "처음 신발 신고 나가는 법", "러닝 전후 스트레칭", "첫 러닝 인증"] },
+      { week: "2주차", title: "습관 만들기", items: ["초보자 페이스 잡는 법", "지속하는 방법 — 의지가 아니라 환경", "러닝 기록하는 법 (스트라바 등)"] },
+      { week: "3주차", title: "재미 찾기", items: ["러닝 코스 추천", "슬럼프 올 때 대처법", "대회 출전 고려해보기 (5K, 10K)"] },
+      { week: "4주차", title: "완주", items: ["한 달 기록 돌아보기", '"나는 할 수 있는 사람"이라는 증거 확인', "다음 목표 설정 (5K → 10K → 하프마라톤)"] },
+    ];
+
+    const KAKAO_FREE = "https://open.kakao.com/o/gHlWwzti";  // 무료 커뮤니티: 같이 뛰자 하루 러닝
+    const KAKAO_PAID = "https://docs.google.com/forms/d/e/1FAIpQLSfaZVVedqmS_0CEpggGewkhV8_7daCNTsyuPBLv5Hmy5Noefg/viewform";  // 구글 폼 신청서
+
+    function App() {
+      const [open, setOpen] = useState(null);
+
+      return (
+        <div style={{ fontFamily: FONT, background: C.bg }}>
+
+          {/* HERO */}
+          <section style={{ background: C.bgDark, padding: "80px 24px 64px", textAlign: "center" }}>
+            <div style={{ maxWidth: 640, margin: "0 auto" }}>
+              <Tag>30일 러닝 인증 챌린지</Tag>
+              <h1 style={{
+                fontFamily: FONT, fontSize: "clamp(26px, 5.5vw, 42px)",
+                fontWeight: 800, color: C.white, lineHeight: 1.35, margin: "0 0 20px",
+              }}>
+                혼자서 못 했던 당신이,<br />
+                <span style={{ color: C.yellow }}>한 달 뒤 5km를 완주하게 됩니다</span>
+              </h1>
+              <p style={{
+                fontFamily: FONT, fontSize: "clamp(14px, 2.5vw, 17px)",
+                color: "#CCCCCC", lineHeight: 1.75, margin: "0 0 36px",
+              }}>
+                혼자 하면 3일, 같이 하면 30일.<br />
+                4년 러닝 경험 코치와 함께하는 초보 러너 완주 챌린지.
+              </p>
+              <a href="#pricing" style={{
+                display: "inline-block", background: C.yellow, color: C.text,
+                fontFamily: FONT, fontWeight: 800, fontSize: 16,
+                padding: "16px 36px", borderRadius: 100,
+                textDecoration: "none", letterSpacing: "0.02em",
+              }}>
+                지금 신청하기 →
+              </a>
+              <p style={{ fontFamily: FONT, fontSize: 12, color: "#888888", marginTop: 14 }}>
+                ✓ 6월 1일 시작 &nbsp;&nbsp; ✓ 선착순 10명 &nbsp;&nbsp; ✓ 초보자 환영
+              </p>
+            </div>
+          </section>
+
+          {/* PAIN */}
+          <Section bg={C.bg}>
+            <Reveal>
+              <SectionTitle tag="공감해?" title={"이 중 하나라도 해당되면\n이 챌린지가 맞아."} />
+            </Reveal>
+            <Reveal delay={0.1}><PainItem icon="😮‍💨" text="러닝 시작해보려 했는데, 3일 넘기질 못했다." /></Reveal>
+            <Reveal delay={0.15}><PainItem icon="🤦" text="'의지가 없는 건가...' 자책한 적이 있다." /></Reveal>
+            <Reveal delay={0.2}><PainItem icon="🙈" text="혼자 뛰면 금방 그만두고 싶어진다." /></Reveal>
+            <Reveal delay={0.25}><PainItem icon="📍" text="뭐부터 해야 할지 몰라서 시작 자체를 못 했다." /></Reveal>
+            <Reveal delay={0.3}>
+              <div style={{ marginTop: 32, padding: "20px 24px", background: C.yellowLight, borderRadius: 14 }}>
+                <p style={{ fontFamily: FONT, fontSize: 15, color: C.text, lineHeight: 1.7, margin: 0, fontWeight: 600 }}>
+                  의지 문제가 아니야.<br />혼자 하면 누구나 3일이야.
+                </p>
+              </div>
+            </Reveal>
+          </Section>
+
+          {/* STORY */}
+          <Section bg="#F5F0E8">
+            <Reveal>
+              <SectionTitle tag="코치 소개" title="나도 동호회 맨 뒤에서 달렸어." />
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p style={{ fontFamily: FONT, fontSize: 15, color: C.text, lineHeight: 1.85, margin: "0 0 20px" }}>
+                러닝 시작했을 때, 나는 동호회에서 항상 맨 뒤였어.<br />
+                숨 차고, 다리 무겁고, '내가 왜 이걸 하고 있지?' 싶었지.
+              </p>
+              <p style={{ fontFamily: FONT, fontSize: 15, color: C.text, lineHeight: 1.85, margin: "0 0 20px" }}>
+                근데 4년이 지난 지금, 하프마라톤을 완주했고<br />
+                주변 친구 10명을 러닝에 입문시켰어.
+              </p>
+              <p style={{ fontFamily: FONT, fontSize: 15, color: C.text, lineHeight: 1.85, margin: 0 }}>
+                특별한 방법이 있었던 게 아니야.<br />
+                <strong>같이 달렸을 뿐이야.</strong>
+              </p>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <div style={{ display: "flex", gap: 24, marginTop: 32, flexWrap: "wrap" }}>
+                {[
+                  { num: "4년", label: "러닝 경력" },
+                  { num: "10명+", label: "러닝 입문 친구" },
+                  { num: "하프마라톤", label: "완주" },
+                ].map(({ num, label }) => (
+                  <div key={label} style={{ textAlign: "center", flex: "1 1 80px" }}>
+                    <p style={{ fontFamily: FONT, fontWeight: 800, fontSize: "clamp(20px, 4vw, 26px)", color: C.yellowDark, margin: "0 0 4px" }}>
+                      {num}
+                    </p>
+                    <p style={{ fontFamily: FONT, fontSize: 12, color: C.textSub, margin: 0 }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </Section>
+
+          {/* SOLUTION */}
+          <Section bg={C.white}>
+            <Reveal>
+              <SectionTitle tag="해결책" title="왜 '같이 달리면' 달라질까?" />
+            </Reveal>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+              <Reveal delay={0.1}>
+                <StepCard num="1" title="커뮤니티 = 외부 책임감" desc="인증샷 하나가 '오늘 쉬지 뭐'를 막아줘. 남들도 올리는 걸 보면 나도 달리고 싶어진다." />
+              </Reveal>
+              <Reveal delay={0.2}>
+                <StepCard num="2" title="보증금 = 행동 트리거" desc="₩20,000이 걸려있으면 움직인다. 심리학적으로 손실 회피 본능이 의지를 대신해줘." />
+              </Reveal>
+            </div>
+          </Section>
+
+          {/* BENEFITS */}
+          <Section bg={C.bg}>
+            <Reveal>
+              <SectionTitle tag="이런 게 포함돼" title="챌린지에서 받을 수 있는 것" />
+            </Reveal>
+            {benefits.map((b, i) => (
+              <Reveal key={b.title} delay={i * 0.1}>
+                <BenefitRow {...b} />
+              </Reveal>
+            ))}
+          </Section>
+
+          {/* CURRICULUM */}
+          <Section bg="#F5F0E8">
+            <Reveal>
+              <SectionTitle tag="4주 커리큘럼" title="매주 이렇게 달려." />
+            </Reveal>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {weekCurriculum.map((w, i) => (
+                <Reveal key={w.week} delay={i * 0.1}>
+                  <div style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+                    <button
+                      onClick={() => setOpen(open === i ? null : i)}
+                      style={{
+                        width: "100%", background: "none", border: "none",
+                        cursor: "pointer", padding: "18px 20px",
+                        display: "flex", justifyContent: "space-between",
+                        alignItems: "center", textAlign: "left",
+                      }}
+                    >
+                      <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: C.text }}>
+                        <span style={{ display: "inline-block", background: C.yellow, padding: "2px 10px", borderRadius: 100, fontSize: 12, marginRight: 10 }}>
+                          {w.week}
+                        </span>
+                        {w.title}
+                      </span>
+                      <span style={{ fontSize: 18, color: C.textMuted }}>{open === i ? "▲" : "▼"}</span>
+                    </button>
+                    {open === i && (
+                      <ul style={{ margin: 0, padding: "0 20px 18px 20px", listStyle: "none" }}>
+                        {w.items.map(item => (
+                          <li key={item} style={{
+                            fontFamily: FONT, fontSize: 14, color: C.textSub,
+                            lineHeight: 1.65, padding: "4px 0",
+                            display: "flex", alignItems: "flex-start", gap: 8,
+                          }}>
+                            <span style={{ color: C.yellow, fontWeight: 700 }}>—</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </Section>
+
+          {/* PRICING */}
+          <Section id="pricing" bg={C.bgDark} style={{ padding: "80px 24px" }}>
+            <Reveal>
+              <SectionTitle
+                tag="참여 신청"
+                title={<span style={{ color: C.white }}>6월 1일 시작 · 선착순 10명</span>}
+                center
+              />
+            </Reveal>
+            <Reveal delay={0.1}>
+              <div style={{ background: C.white, borderRadius: 20, padding: "36px 28px", maxWidth: 420, margin: "0 auto" }}>
+                <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSub, margin: "0 0 20px", textAlign: "center" }}>
+                  30일 러닝 인증 챌린지
+                </p>
+
+                <div style={{ marginBottom: 24 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontFamily: FONT, fontSize: 14, color: C.textSub }}>참여비</span>
+                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15 }}>₩30,000</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 14px", background: C.yellowLight, borderRadius: 10 }}>
+                    <div>
+                      <p style={{ fontFamily: FONT, fontSize: 14, color: C.text, fontWeight: 600, margin: "0 0 2px" }}>보증금 (환급 가능)</p>
+                      <p style={{ fontFamily: FONT, fontSize: 11, color: C.textSub, margin: 0 }}>주 3회 인증 완료 시 전액 반환</p>
+                    </div>
+                    <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: C.yellowDark }}>₩20,000</span>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginBottom: 24, display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15 }}>총 결제</span>
+                  <div style={{ textAlign: "right" }}>
+                    <p style={{ fontFamily: FONT, fontWeight: 800, fontSize: 22, color: C.text, margin: 0 }}>₩50,000</p>
+                    <p style={{ fontFamily: FONT, fontSize: 11, color: C.success, margin: "2px 0 0" }}>→ 완주 시 ₩20,000 환급</p>
+                  </div>
+                </div>
+
+                <a
+                  href={KAKAO_PAID}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block", width: "100%",
+                    background: C.yellow, color: C.text,
+                    fontFamily: FONT, fontWeight: 800,
+                    fontSize: 16, textAlign: "center",
+                    padding: "16px 0", borderRadius: 100,
+                    textDecoration: "none", letterSpacing: "0.02em",
+                  }}
+                >
+                  신청하기 (구글 폼)
+                </a>
+                <p style={{ fontFamily: FONT, fontSize: 11, color: C.textMuted, textAlign: "center", marginTop: 12 }}>
+                  ✓ 구글 폼 신청 → 카카오페이 결제 → 채팅방 초대<br />
+                  ✓ 선착순 10명 마감 시 조기 종료
+                </p>
+              </div>
+            </Reveal>
+          </Section>
+
+          {/* FREE COMMUNITY */}
+          <Section bg={C.white} style={{ textAlign: "center", padding: "48px 24px" }}>
+            <Reveal>
+              <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12 }}>
+                아직 고민 중이야?
+              </p>
+              <h3 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 20, color: C.text, margin: "0 0 10px" }}>
+                무료 커뮤니티 먼저 들어와봐
+              </h3>
+              <p style={{ fontFamily: FONT, fontSize: 14, color: C.textSub, lineHeight: 1.7, margin: "0 0 24px" }}>
+                부담 없이 러닝 이야기 나누는 공간이야.<br />
+                챌린지 시작 전에 분위기 먼저 느껴봐.
+              </p>
+              <a
+                href={KAKAO_FREE}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  border: `2px solid ${C.yellow}`,
+                  color: C.text,
+                  fontFamily: FONT, fontWeight: 700,
+                  fontSize: 15, padding: "12px 28px",
+                  borderRadius: 100, textDecoration: "none",
+                  background: "transparent",
+                }}
+              >
+                같이 뛰자 하루 러닝 입장하기 →
+              </a>
+            </Reveal>
+          </Section>
+
+          {/* FAQ */}
+          <Section bg={C.bg}>
+            <Reveal>
+              <SectionTitle tag="FAQ" title="자주 묻는 질문" />
+            </Reveal>
+            {[
+              { q: "러닝을 한 번도 해본 적 없어도 괜찮아요?", a: "완전 처음인 분들을 위해 만든 챌린지예요. 첫 주는 신발 신고 나가는 것부터 같이 시작해요." },
+              { q: "주 3회가 부담스러우면요?", a: "부담스럽다는 느낌 자체가 정상이에요. 그래서 커뮤니티가 있고, 보증금이 있어요. 처음엔 10분만 걸어도 인증 가능해요." },
+              { q: "보증금 환급 조건이 뭐예요?", a: "30일 동안 주 3회 이상(총 12회 이상) 단톡방에 러닝 인증샷을 올리면 전액 돌려드려요." },
+              { q: "서울에 안 살면요?", a: "오프라인 한강 러닝은 선택 참여예요. 온라인 단톡방과 인증 시스템은 전국 어디서나 참여할 수 있어요." },
+            ].map(({ q, a }, i) => (
+              <Reveal key={i} delay={i * 0.08}>
+                <div style={{ borderBottom: `1px solid ${C.border}`, padding: "18px 0" }}>
+                  <button
+                    onClick={() => setOpen(open === `faq${i}` ? null : `faq${i}`)}
+                    style={{
+                      width: "100%", background: "none", border: "none",
+                      cursor: "pointer", padding: 0,
+                      display: "flex", justifyContent: "space-between",
+                      alignItems: "center", textAlign: "left", gap: 16,
+                    }}
+                  >
+                    <span style={{ fontFamily: FONT, fontWeight: 600, fontSize: 14, color: C.text }}>{q}</span>
+                    <span style={{ fontSize: 16, color: C.textMuted, flexShrink: 0 }}>{open === `faq${i}` ? "▲" : "▼"}</span>
+                  </button>
+                  {open === `faq${i}` && (
+                    <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSub, lineHeight: 1.7, margin: "12px 0 0" }}>
+                      {a}
+                    </p>
+                  )}
+                </div>
+              </Reveal>
+            ))}
+          </Section>
+
+          {/* FINAL CTA */}
+          <Section bg={C.yellow} style={{ textAlign: "center", padding: "64px 24px" }}>
+            <Reveal>
+              <h2 style={{
+                fontFamily: FONT, fontWeight: 800,
+                fontSize: "clamp(22px, 4.5vw, 32px)",
+                color: C.text, lineHeight: 1.4, margin: "0 0 16px",
+              }}>
+                맨 뒤에서 달려도 괜찮아.<br />끝까지 가면 된다.
+              </h2>
+              <p style={{ fontFamily: FONT, fontSize: 15, color: "#444", lineHeight: 1.7, margin: "0 0 32px" }}>
+                6월 1일 시작 · 선착순 10명 · 지금 신청하면 준비 가이드 먼저 드려요.
+              </p>
+              <a
+                href={KAKAO_PAID}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block", background: C.bgDark, color: C.white,
+                  fontFamily: FONT, fontWeight: 800, fontSize: 16,
+                  padding: "16px 36px", borderRadius: 100, textDecoration: "none",
+                }}
+              >
+                신청하기 →
+              </a>
+            </Reveal>
+          </Section>
+
+          {/* FOOTER */}
+          <footer style={{ background: C.bgDark, padding: "32px 24px", textAlign: "center" }}>
+            <p style={{ fontFamily: FONT, fontSize: 12, color: "#666", margin: "0 0 4px" }}>
+              30일 러닝 인증 챌린지 · 코치 전하루
+            </p>
+            <p style={{ fontFamily: FONT, fontSize: 11, color: "#555", margin: "0 0 8px" }}>
+              채팅방: 같이 뛰자 하루 러닝
+            </p>
+            <a href={KAKAO_PAID} target="_blank" rel="noopener noreferrer"
+              style={{ fontFamily: FONT, fontSize: 11, color: C.yellow, textDecoration: "none" }}>
+              {KAKAO_LINK}
+            </a>
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
